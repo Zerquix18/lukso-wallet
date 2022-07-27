@@ -1,11 +1,14 @@
+import { Route, Routes } from "react-router-dom";
 import { Layout } from "../../components";
-import { useAuthenticatedUser } from "../../hooks"
+import Controllers from "./Controllers";
 
 function Authenticated() {
-  const { address } = useAuthenticatedUser();
-
   return (
-    <Layout>Authenticated: { address }</Layout>
+    <Layout>
+      <Routes>
+        <Route path="/controllers" element={<Controllers />} />
+      </Routes>
+    </Layout>
   );
 }
 
