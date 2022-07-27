@@ -1,10 +1,12 @@
+import { Layout } from "../../components";
 import { useAuthenticatedUser } from "../../hooks"
 
 function Authenticated() {
   const { address } = useAuthenticatedUser();
+
   return (
-    <div>Authenticated: { address }</div>
-  )
+    <Layout>Authenticated: { address }</Layout>
+  );
 }
 
 export default Authenticated;
