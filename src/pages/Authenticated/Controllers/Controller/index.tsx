@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Button, Card, Content, Heading, Media } from "react-bulma-components";
 import { IController } from "../../../../models";
+import PermissionModal from "./PermissionModal";
 
 interface ControllerProps {
   controller: IController;
@@ -7,9 +9,14 @@ interface ControllerProps {
 
 function Controller({ controller }: ControllerProps) {
   const { address, isEOA, permissions } = controller;
+  const [permissionsModalOpen, setPermissionsModalOpen] = useState(false);
 
   const imageUrl = `https://effigy.im/a/${address}.png`;
   const permissionsCount = Object.values(permissions).filter(Boolean).length;
+
+  const togglePermissionsModal = () => {
+    setPermissionsModalOpen(state => ! state);
+  };
 
   return (
    <Card>
@@ -24,11 +31,14 @@ function Controller({ controller }: ControllerProps) {
           </Media.Item>
         </Media>
         <Content>
-          <Button color="primary">
+          <Button color="primary" onClick={togglePermissionsModal}>
             { permissionsCount }&nbsp;
             { permissionsCount === 1 ? 'permission': 'permissions' }
           </Button>
         </Content>
+        { permissionsModalOpen && (
+          <PermissionModal controller={controller} onClose={togglePermissionsModal} />
+        )}
       </Card.Content>
     </Card>
   )
