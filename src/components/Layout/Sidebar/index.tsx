@@ -19,7 +19,7 @@ function Sidebar() {
       <Menu.List title="Pages">
         { items.map(item => {
           const active = pathname === item.path;
-          return <Menu.List.Item active={active} onClick={goTo(item.path)}>{ item.name }</Menu.List.Item>;
+          return <Menu.List.Item key={item.path} active={active} onClick={goTo(item.path)}>{ item.name }</Menu.List.Item>;
         })}
       </Menu.List>
     </Menu>
