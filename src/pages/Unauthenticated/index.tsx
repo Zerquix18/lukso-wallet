@@ -29,9 +29,9 @@ function Unauthenticated() {
       if (! window.ethereum) {
         throw new Error('Could not find a wallet (window.ethereum is not defined)');
       }
-  
+
+      const addresses = await window.ethereum.request({ method: 'eth_accounts' });
       const web3 = new Web3(window.ethereum);
-      const addresses: string[] = await web3.eth.requestAccounts();
       if (addresses.length === 0) {
         throw new Error('Did not receive an address to use.');
       }
