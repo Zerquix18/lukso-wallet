@@ -36,6 +36,7 @@ export type IControllerPermissions = {
 
 export interface IController {
   address: string;
+  isEOA: boolean;
   permissions: IControllerPermissions;
   allowedAddresses: string[] | null;
   allowedFunctions: string[] | null;
