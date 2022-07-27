@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Box, Button, Container, Message } from 'react-bulma-components';
 import Web3 from 'web3';
 
@@ -12,12 +12,20 @@ declare var window: any;
 // this will later be re-factored to allow multiple wallets
 // and or the creation of a new universal profile
 
+let requested = false; // strict mode issues...
+
 function Unauthenticated() {
   const { authenticate } = useAuthentication();
   const [error, setError] = useState('');
 
   const onAuthenticate = useCallback(async () => {
     try {
+      if (requested) {
+        return;
+      }
+
+      requested = true;
+
       if (! window.ethereum) {
         throw new Error('Could not find a wallet (window.ethereum is not defined)');
       }
@@ -40,12 +48,18 @@ function Unauthenticated() {
     } catch (e) {
       console.log(e);
       setError((e as Error).message);
+    } finally {
+      requested = true;
     }
   }, [authenticate]);
 
   const onDismissError = () => {
     setError('');
   };
+
+  useEffect(() => {
+    onAuthenticate();
+  }, [onAuthenticate]);
 
   return (
     <Container>
