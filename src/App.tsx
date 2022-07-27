@@ -1,9 +1,11 @@
+import Pages from './pages';
+import { AuthenticationProvider } from './providers/Authentication';
 
 function App() {
   return (
-    <div>
-      :)
-    </div>
+    <AuthenticationProvider>
+      <Pages />
+    </AuthenticationProvider>
   );
 }
 
