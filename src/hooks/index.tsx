@@ -17,11 +17,11 @@ export function useAuthentication() {
 
   const authenticate = useCallback((address: string) => {
     dispatch({ type: 'AUTHENTICATE', address });
-  }, []);
+  }, [dispatch]);
 
   const logout = useCallback(() => {
     dispatch({ type: 'LOGOUT' });
-  }, []);
+  }, [dispatch]);
 
   return { ...state, authenticate, logout };
 }

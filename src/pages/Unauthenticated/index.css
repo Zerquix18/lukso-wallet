@@ -1,0 +1,11 @@
+.authentication-block {
+  width: 500px;
+  margin: 0 auto;
+}
+
+.authentication-block-wrapper {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
