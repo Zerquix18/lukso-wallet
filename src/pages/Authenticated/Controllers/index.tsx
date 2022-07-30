@@ -72,6 +72,10 @@ function Controllers() {
     }
   }, [erc725]);
 
+  const onSave = () => {
+    
+  };
+
   useEffect(() => {
     fetchControllers();
   }, [fetchControllers]);
