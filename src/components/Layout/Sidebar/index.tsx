@@ -8,7 +8,7 @@ function Sidebar() {
 
   const items = [
     { path: '/assets', name: 'Assets' },
-    { path: '/send-receive', name: 'Send & Receive' },
+    { path: '/send', name: 'Send LYX' },
     { path: '/controllers', name: 'Controllers' },
     { path: '/vaults', name: 'Vaults' },
     { path: '/activity', name: 'Activity' },
