@@ -1,13 +1,18 @@
 import { Container, Dropdown, Heading, Icon, Navbar } from "react-bulma-components";
 import { toast } from 'bulma-toast';
 import { useAuthenticatedUser, useAuthentication } from "../../../hooks";
+import { useNavigate } from "react-router-dom";
 
 function LayoutNavbar() {
   const { logout } = useAuthentication();
   const { address } = useAuthenticatedUser();
+  const navigate = useNavigate();
 
   const onDropdownSelect = (value: string) => {
     switch (value) {
+      case 'my_profile':
+        navigate('/profile');
+        break;
       case 'copy_address':
         navigator.clipboard.writeText(address).then(() => {
           toast({
@@ -44,6 +49,7 @@ function LayoutNavbar() {
             onChange={onDropdownSelect}
           >
             <Dropdown.Item renderAs="a" value="copy_address">Copy Address</Dropdown.Item>
+            <Dropdown.Item renderAs="a" value="my_profile">My Profile</Dropdown.Item>
             <Dropdown.Item renderAs="a" value="logout">Logout</Dropdown.Item>
           </Dropdown>
         </Navbar.Container>

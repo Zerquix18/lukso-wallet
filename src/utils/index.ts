@@ -47,5 +47,3 @@ export function permissionsToString(permissions: IControllerPermissions) {
   const hex = parseInt(completeBinary, 2).toString(16);
   return '0x' + hex.padStart(64, '0');
 }
-
-export {};
