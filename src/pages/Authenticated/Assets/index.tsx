@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Heading, Progress, Notification, Columns } from "react-bulma-components";
 
+import Web3 from "web3";
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP3UniversalProfileMetadata from '@erc725/erc725.js/schemas/LSP3UniversalProfileMetadata.json';
 import LSP4schema from '@erc725/erc725.js/schemas/LSP4DigitalAsset.json';
+import LSP7Mintable from '@lukso/lsp-smart-contracts/artifacts/LSP7Mintable.json';
 import { LSP4DigitalAsset } from "@lukso/lsp-factory.js/build/main/src/lib/interfaces/lsp4-digital-asset";
 
 import { DEFAULT_CONFIG, DEFAULT_PROVIDER } from "../../../constants";
@@ -12,6 +14,10 @@ import { IAsset } from "../../../models";
 
 import NewAssetModal from "./NewAssetModal";
 import Asset from "./Asset";
+
+declare var window: any;
+
+const web3 = new Web3(window.ethereum);
 
 function Assets() {
   const { address } = useAuthenticatedUser();
@@ -23,23 +29,28 @@ function Assets() {
 
   const fetchAssets = useCallback(async () => {
     try {
-      const data = await erc725.fetchData('LSP12IssuedAssets[]');
+      const data = await erc725.fetchData('LSP5ReceivedAssets[]');
       const contractIds = data.value as string[];
 
       const promises = contractIds.map(async contractId => {
-        const erc725 = new ERC725(LSP4schema as ERC725JSONSchema[], contractId, DEFAULT_PROVIDER, DEFAULT_CONFIG);
+        const contractErc725 = new ERC725(LSP4schema as ERC725JSONSchema[], contractId, DEFAULT_PROVIDER, DEFAULT_CONFIG);
 
+        const LSP7MintableAbi = LSP7Mintable.abi as any;
+        const myToken = new web3.eth.Contract(LSP7MintableAbi, contractId);
+  
         const [
           LSP4TokenName,
           LSP4TokenSymbol,
           LSP4Metadata,
           LSP4Creators,
+          weiBalance,
         ] = await Promise.all(
           [
-            erc725.fetchData('LSP4TokenName'),
-            erc725.fetchData('LSP4TokenSymbol'),
-            erc725.fetchData('LSP4Metadata'),
-            erc725.fetchData('LSP4Creators[]'),
+            contractErc725.fetchData('LSP4TokenName'),
+            contractErc725.fetchData('LSP4TokenSymbol'),
+            contractErc725.fetchData('LSP4Metadata'),
+            contractErc725.fetchData('LSP4Creators[]'),
+            myToken.methods.balanceOf(address).call(),
           ]
         );
 
@@ -49,7 +60,9 @@ function Assets() {
         const metadata = (LSP4Metadata.value as any).LSP4Metadata as LSP4DigitalAsset;
         const creators = LSP4Creators.value as string[];
 
-        const asset: IAsset = { id, name, symbol, metadata, creators };
+        const balance = parseFloat(web3.utils.fromWei(weiBalance));
+
+        const asset: IAsset = { id, name, symbol, metadata, creators, balance };
 
         return asset;
       });
