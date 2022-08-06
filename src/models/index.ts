@@ -3,6 +3,8 @@
 // however, my understanding of the project is limited so far
 // so leaving the option open
 
+import { LSP4DigitalAsset } from "@lukso/lsp-factory.js/build/main/src/lib/interfaces/lsp4-digital-asset";
+
 export type IAuthenticationStateType = 'EOA' | 'UP';
 export interface IAuthenticationStateUser {
   address: string;
@@ -42,4 +44,12 @@ export interface IController {
   allowedFunctions: string[] | null;
   allowedStandards: string[] | null;
   allowedERC725YKeys: string[] | null;
+}
+
+export interface IAsset {
+  id: string;
+  name: string;
+  symbol: string;
+  metadata: LSP4DigitalAsset;
+  creators: string[];
 }
