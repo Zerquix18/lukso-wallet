@@ -25,9 +25,10 @@ function MintModal({ asset, onClose }: MintModalProps) {
     try {
       setSaving(true);
 
+      const weiAmount = web3.utils.toWei(String(amount));
       const LSP7MintableAbi = LSP7Mintable.abi as any;
       const myToken = new web3.eth.Contract(LSP7MintableAbi, asset.id);
-      await myToken.methods.mint(address, amount, false, '0x').send({ from: address });
+      await myToken.methods.mint(address, weiAmount, false, '0x').send({ from: address });
       onClose();
     } catch (e) {
       console.log(e);
