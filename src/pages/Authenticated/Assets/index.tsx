@@ -29,7 +29,7 @@ function Assets() {
 
   const fetchAssets = useCallback(async () => {
     try {
-      const data = await erc725.fetchData('LSP5ReceivedAssets[]');
+      const data = await erc725.fetchData('LSP12IssuedAssets[]');
       const contractIds = data.value as string[];
 
       const promises = contractIds.map(async contractId => {
