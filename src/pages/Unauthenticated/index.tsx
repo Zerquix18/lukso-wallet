@@ -21,7 +21,7 @@ function Unauthenticated() {
   const onAuthenticate = useCallback(async () => {
     try {
       if (requested) {
-        return;
+        // return;
       }
 
       requested = true;

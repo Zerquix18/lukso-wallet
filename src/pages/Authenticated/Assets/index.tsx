@@ -116,8 +116,8 @@ function AssetsWrapper() {
     <div>
       <Heading>
         Assets
-        <Heading subtitle>Manage your tokens and NFTs.</Heading>
       </Heading>
+      <Heading subtitle>Manage your tokens and NFTs.</Heading>
 
       <div style={{ textAlign: 'right', marginBottom: 10 }}>
         <Button color="primary" onClick={toggleAdding}>Add asset</Button>
