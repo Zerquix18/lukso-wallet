@@ -74,7 +74,7 @@ function Assets() {
     } finally {
       setLoading(false);
     }
-  }, [erc725]);
+  }, [erc725, address]);
 
   useEffect(() => {
     fetchAssets();
