@@ -30,13 +30,18 @@ function Unauthenticated() {
         throw new Error('Could not find a wallet (window.ethereum is not defined)');
       }
 
-      const addresses = await window.ethereum.request({ method: 'eth_accounts' });
-      const web3 = new Web3(window.ethereum);
+      let addresses = await window.ethereum.request({ method: 'eth_accounts' });
+      if (addresses.length === 0) {
+        addresses = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      }
+
       if (addresses.length === 0) {
         throw new Error('Did not receive an address to use.');
       }
 
       const address = addresses[0];
+
+      const web3 = new Web3(window.ethereum);
       const result = await web3.eth.getCode(address);
       const type: IAuthenticationStateType = result === '0x' ? 'EOA' : 'UP';
 
