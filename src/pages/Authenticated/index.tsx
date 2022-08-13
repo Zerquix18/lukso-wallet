@@ -5,6 +5,7 @@ import Controllers from "./Controllers";
 import Profile from "./Profile";
 import Send from "./Send";
 import Assets from "./Assets";
+import Sign from "./Sign";
 
 function Authenticated() {
   return (
@@ -14,6 +15,7 @@ function Authenticated() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/send" element={<Send />} />
         <Route path="/assets" element={<Assets />} />
+        <Route path="/sign" element={<Sign />} />
       </Routes>
     </Layout>
   );
