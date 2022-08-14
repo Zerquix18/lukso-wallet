@@ -1,9 +1,10 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { Card, Heading, Media, Progress, Image, Content, Button, Tag } from "react-bulma-components";
+import { useQuery } from "@tanstack/react-query";
 
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP3UniversalProfileMetadata from '@erc725/erc725.js/schemas/LSP3UniversalProfileMetadata.json';
-import { LSP3ProfileJSON, LSP3Profile } from '@lukso/lsp-factory.js';
+import { LSP3ProfileJSON } from '@lukso/lsp-factory.js';
 
 import { useAuthenticatedUser } from "../../../hooks";
 import { DEFAULT_CONFIG, DEFAULT_PROVIDER } from "../../../constants";
@@ -14,8 +15,6 @@ const DEFAULT_PROFILE_IMAGE = 'http://bulma.io/images/placeholders/128x128.png';
 
 function Profile() {
   const { address } = useAuthenticatedUser();
-  const [profile, setProfile] = useState<LSP3Profile | null>(null);
-  const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
 
   const erc725Ref = useRef(new ERC725(LSP3UniversalProfileMetadata as ERC725JSONSchema[], address, DEFAULT_PROVIDER, DEFAULT_CONFIG));
@@ -25,23 +24,15 @@ function Profile() {
     setEditing(state => ! state);
   };
 
-  const fetchProfileData = useCallback(async () => {
-    try {
-      const data = await erc725.fetchData('LSP3Profile');
-      const value = data.value as any as LSP3ProfileJSON;
-      setProfile(value.LSP3Profile);
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [erc725]);
+  const fetchProfileData = async () => {
+    const data = await erc725.fetchData('LSP3Profile');
+    const value = data.value as any as LSP3ProfileJSON;
+    return value.LSP3Profile;
+  };
 
-  useEffect(() => {
-    fetchProfileData();
-  }, [fetchProfileData]);
+  const { isLoading, data: profile, refetch } = useQuery(['profile'], fetchProfileData);
 
-  if (loading) {
+  if (isLoading) {
     return <Progress />;
   }
 
@@ -113,8 +104,8 @@ function Profile() {
         <ProfileModal
           profile={profile}
           onClose={toggleEditing}
-          onSuccess={(profile) => {
-            setProfile(profile);
+          onSuccess={() => {
+            refetch();
             toggleEditing();
           }}
         />

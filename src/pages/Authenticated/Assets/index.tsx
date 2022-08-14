@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button, Heading, Progress, Notification, Columns } from "react-bulma-components";
+import { useQuery } from "@tanstack/react-query";
 
 import Web3 from "web3";
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
@@ -21,66 +22,56 @@ const web3 = new Web3(window.ethereum);
 
 function Assets() {
   const { address } = useAuthenticatedUser();
-  const [loading, setLoading] = useState(true);
-  const [assets, setAssets] = useState<IAsset[]>([]);
 
   const erc725Ref = useRef(new ERC725(LSP3UniversalProfileMetadata as ERC725JSONSchema[], address, DEFAULT_PROVIDER, DEFAULT_CONFIG));
   const erc725 = erc725Ref.current;
 
-  const fetchAssets = useCallback(async () => {
-    try {
-      const data = await erc725.fetchData('LSP12IssuedAssets[]');
-      const contractIds = data.value as string[];
+  const fetchAssets = async () => {
+    const data = await erc725.fetchData('LSP12IssuedAssets[]');
+    const contractIds = data.value as string[];
 
-      const promises = contractIds.map(async contractId => {
-        const contractErc725 = new ERC725(LSP4schema as ERC725JSONSchema[], contractId, DEFAULT_PROVIDER, DEFAULT_CONFIG);
+    const promises = contractIds.map(async contractId => {
+      const contractErc725 = new ERC725(LSP4schema as ERC725JSONSchema[], contractId, DEFAULT_PROVIDER, DEFAULT_CONFIG);
 
-        const LSP7MintableAbi = LSP7Mintable.abi as any;
-        const myToken = new web3.eth.Contract(LSP7MintableAbi, contractId);
-  
-        const [
-          LSP4TokenName,
-          LSP4TokenSymbol,
-          LSP4Metadata,
-          LSP4Creators,
-          weiBalance,
-        ] = await Promise.all(
-          [
-            contractErc725.fetchData('LSP4TokenName'),
-            contractErc725.fetchData('LSP4TokenSymbol'),
-            contractErc725.fetchData('LSP4Metadata'),
-            contractErc725.fetchData('LSP4Creators[]'),
-            myToken.methods.balanceOf(address).call(),
-          ]
-        );
+      const LSP7MintableAbi = LSP7Mintable.abi as any;
+      const myToken = new web3.eth.Contract(LSP7MintableAbi, contractId);
 
-        const id = contractId;
-        const name = LSP4TokenName.value as string;
-        const symbol = LSP4TokenSymbol.value as string;
-        const metadata = (LSP4Metadata.value as any).LSP4Metadata as LSP4DigitalAsset;
-        const creators = LSP4Creators.value as string[];
+      const [
+        LSP4TokenName,
+        LSP4TokenSymbol,
+        LSP4Metadata,
+        LSP4Creators,
+        weiBalance,
+      ] = await Promise.all(
+        [
+          contractErc725.fetchData('LSP4TokenName'),
+          contractErc725.fetchData('LSP4TokenSymbol'),
+          contractErc725.fetchData('LSP4Metadata'),
+          contractErc725.fetchData('LSP4Creators[]'),
+          myToken.methods.balanceOf(address).call(),
+        ]
+      );
 
-        const balance = parseFloat(web3.utils.fromWei(weiBalance));
+      const id = contractId;
+      const name = LSP4TokenName.value as string;
+      const symbol = LSP4TokenSymbol.value as string;
+      const metadata = (LSP4Metadata.value as any).LSP4Metadata as LSP4DigitalAsset;
+      const creators = LSP4Creators.value as string[];
 
-        const asset: IAsset = { id, name, symbol, metadata, creators, balance };
+      const balance = parseFloat(web3.utils.fromWei(weiBalance));
 
-        return asset;
-      });
+      const asset: IAsset = { id, name, symbol, metadata, creators, balance };
 
-      const assets = await Promise.all(promises);
-      setAssets(assets);
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [erc725, address]);
+      return asset;
+    });
 
-  useEffect(() => {
-    fetchAssets();
-  }, [fetchAssets]);
+    const assets = await Promise.all(promises);
+    return assets;
+  };
 
-  if (loading) {
+  const { isLoading, data: assets } = useQuery(['assets'], fetchAssets);
+
+  if (isLoading || ! assets) {
     return <Progress />;
   }
 

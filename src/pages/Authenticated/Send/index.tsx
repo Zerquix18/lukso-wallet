@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Button, Form, Heading, Notification } from "react-bulma-components";
 import Web3 from "web3";
-import { useAuthenticatedUser } from "../../../hooks";
 import UniversalProfile from "@lukso/lsp-smart-contracts/artifacts/UniversalProfile.json";
+import { useQuery } from "@tanstack/react-query";
+import { useAuthenticatedUser } from "../../../hooks";
 
 declare var window: any;
 const web3 = new Web3(window.ethereum);
@@ -13,27 +14,20 @@ function Send() {
   const { address } = useAuthenticatedUser();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState(0);
-  const [currentBalance, setCurrentBalance] = useState<number | null>(null);
 
   const [sending, setSending] = useState(false);
   const [response, setResponse] = useState<Response | null>(null);
 
-  const fetchCurrentBalance = useCallback(async () => {
-    try {
-      const result = await web3.eth.getBalance(address);
-      const lyx = parseFloat(web3.utils.fromWei(result));
-      setCurrentBalance(lyx);
-    } catch (e) {
-      console.log(e);
-    }
-  }, [address]);
+  const fetchCurrentBalance = async () => {
+    const result = await web3.eth.getBalance(address);
+    const lyx = parseFloat(web3.utils.fromWei(result));
+    return lyx;
+  };
 
-  useEffect(() => {
-    fetchCurrentBalance();
-  }, [fetchCurrentBalance]);
+  const { data: currentBalance } = useQuery(['currentBalance'], fetchCurrentBalance);
 
   const onSetAmountToBalance = () => {
-    if (currentBalance !== null) {
+    if (currentBalance !== undefined) {
       setAmount(currentBalance);
     }
   };
