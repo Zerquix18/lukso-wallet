@@ -27,8 +27,8 @@ function Assets() {
   const erc725 = erc725Ref.current;
 
   const fetchAssets = async () => {
-    const data = await erc725.fetchData('LSP12IssuedAssets[]');
-    const contractIds = data.value as string[];
+    const data = await erc725.fetchData(['LSP12IssuedAssets[]', 'LSP5ReceivedAssets[]']);
+    const contractIds = data.map(item => item.value as string).flat();
 
     const promises = contractIds.map(async contractId => {
       const contractErc725 = new ERC725(LSP4schema as ERC725JSONSchema[], contractId, DEFAULT_PROVIDER, DEFAULT_CONFIG);
@@ -37,18 +37,18 @@ function Assets() {
       const myToken = new web3.eth.Contract(LSP7MintableAbi, contractId);
 
       const [
-        LSP4TokenName,
-        LSP4TokenSymbol,
-        LSP4Metadata,
-        LSP4Creators,
+        [LSP4TokenName, LSP4TokenSymbol, LSP4Metadata, LSP4Creators],
         weiBalance,
+        owner,
+        weiTotalSupply,
+        strDecimals,
       ] = await Promise.all(
         [
-          contractErc725.fetchData('LSP4TokenName'),
-          contractErc725.fetchData('LSP4TokenSymbol'),
-          contractErc725.fetchData('LSP4Metadata'),
-          contractErc725.fetchData('LSP4Creators[]'),
+          contractErc725.fetchData(['LSP4TokenName', 'LSP4TokenSymbol', 'LSP4Metadata', 'LSP4Creators[]']),
           myToken.methods.balanceOf(address).call(),
+          myToken.methods.owner().call(),
+          myToken.methods.totalSupply().call(),
+          myToken.methods.decimals().call(),
         ]
       );
 
@@ -59,8 +59,10 @@ function Assets() {
       const creators = LSP4Creators.value as string[];
 
       const balance = parseFloat(web3.utils.fromWei(weiBalance));
+      const totalSupply = parseFloat(web3.utils.fromWei(weiTotalSupply));
+      const decimals = parseFloat(strDecimals);
 
-      const asset: IAsset = { id, name, symbol, metadata, creators, balance };
+      const asset: IAsset = { id, name, symbol, metadata, creators, balance, owner, totalSupply, decimals };
 
       return asset;
     });

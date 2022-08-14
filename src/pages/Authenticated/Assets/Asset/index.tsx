@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Content, Heading, Media } from "react-bulma-components";
+import { Button, Card, Content, Heading, Media, Tag } from "react-bulma-components";
 import { IAsset } from "../../../../models";
 import MintModal from "./MintModal";
 
@@ -29,6 +29,29 @@ function Asset({ asset }: AssetProps) {
         </Media>
         <Content>
           { asset.metadata.description }
+
+          <hr />
+
+          <Tag.Group hasAddons>
+            <Tag color="info">
+              Total Supply
+            </Tag>
+            <Tag>
+              { asset.totalSupply }
+            </Tag>
+            <Tag color="primary">
+              Decimals
+            </Tag>
+            <Tag>
+              { asset.decimals }
+            </Tag>
+            <Tag color="dark">
+              Owner
+            </Tag>
+            <Tag>
+              { asset.owner.slice(0, 4) + '...' + asset.owner.slice(-4) }
+            </Tag>
+          </Tag.Group>
 
           <hr />
 

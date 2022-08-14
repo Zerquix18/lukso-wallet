@@ -52,5 +52,8 @@ export interface IAsset {
   symbol: string;
   metadata: LSP4DigitalAsset;
   creators: string[];
+  owner: string;
+  decimals: number;
   balance: number;
+  totalSupply: number;
 }
