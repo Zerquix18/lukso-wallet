@@ -28,7 +28,7 @@ function Assets() {
 
   const fetchAssets = async () => {
     const data = await erc725.fetchData(['LSP12IssuedAssets[]', 'LSP5ReceivedAssets[]']);
-    const contractIds = data.map(item => item.value as string).flat();
+    const contractIds = Array.from(new Set(data.map(item => item.value as string).flat()));
 
     const promises = contractIds.map(async contractId => {
       const contractErc725 = new ERC725(LSP4schema as ERC725JSONSchema[], contractId, DEFAULT_PROVIDER, DEFAULT_CONFIG);
