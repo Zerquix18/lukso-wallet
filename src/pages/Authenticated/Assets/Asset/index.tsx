@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { Button, Card, Content, Heading, Media, Tag } from "react-bulma-components";
+
+import { useAuthenticatedUser } from "../../../../hooks";
 import { IAsset } from "../../../../models";
+
 import MintModal from "./MintModal";
+import OwnershipDropdown from "./OwnershipDropdown";
 
 interface AssetProps {
   asset: IAsset;
 }
 
 function Asset({ asset }: AssetProps) {
+  const { address } = useAuthenticatedUser();
   const [mintingModal, setMintingModal] = useState(false);
   const image = asset.metadata.icon ? 'https://ipfs.io/ipfs/' + asset.metadata.icon[0].url.replace('ipfs://', '') : null;
 
@@ -33,6 +38,13 @@ function Asset({ asset }: AssetProps) {
           <hr />
 
           <Tag.Group hasAddons>
+            <Tag color="dark">
+              Owner
+            </Tag>
+            <Tag>
+              { asset.owner.slice(0, 4) + '...' + asset.owner.slice(-4) }
+              { asset.owner === address ? ' (you)' : null}
+            </Tag>
             <Tag color="info">
               Total Supply
             </Tag>
@@ -45,12 +57,6 @@ function Asset({ asset }: AssetProps) {
             <Tag>
               { asset.decimals }
             </Tag>
-            <Tag color="dark">
-              Owner
-            </Tag>
-            <Tag>
-              { asset.owner.slice(0, 4) + '...' + asset.owner.slice(-4) }
-            </Tag>
           </Tag.Group>
 
           <hr />
@@ -58,6 +64,7 @@ function Asset({ asset }: AssetProps) {
           <Button.Group size="small">
             <Button color="primary" onClick={toggleMintingModal}>Mint</Button>
             <Button color="secondary">Transfer</Button>
+            { asset.owner === address && <OwnershipDropdown assetId={asset.id} /> }
           </Button.Group>
         </Content>
 
