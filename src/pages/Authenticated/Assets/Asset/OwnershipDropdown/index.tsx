@@ -28,10 +28,14 @@ function OwnershipDropdown({ assetId }: OwnershipDropdownProps) {
         toggleTransferModal();
         break;
       case 'renounce':
+        if (! window.confirm('Are you sure you want to renounce ownership of this asset? THIS CANNOT BE UNDONE')) {
+          return;
+        }
+
         const web3 = new Web3(window.ethereum);
         const LSP7MintableAbi = LSP7Mintable.abi as any;
         const myToken = new web3.eth.Contract(LSP7MintableAbi, assetId);
-        await myToken.methods.renounceTransfership().send({ from: address });
+        await myToken.methods.renounceOwnership().send({ from: address });
         window.location.reload();
         break;
     }

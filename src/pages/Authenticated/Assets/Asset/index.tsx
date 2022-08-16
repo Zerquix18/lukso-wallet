@@ -67,10 +67,14 @@ function Asset({ asset }: AssetProps) {
           <hr />
 
           <Button.Group size="small">
-            <Button color="primary" onClick={toggleMintingModal}>Mint</Button>
-            { asset.owner === address && <Button color="info" onClick={toggleUpdatingModal}>Update</Button> }
-            <Button color="link">Transfer</Button>
-            { asset.owner === address && <OwnershipDropdown assetId={asset.id} /> }
+            { asset.owner === address && (
+              <>
+                <Button color="primary" onClick={toggleMintingModal}>Mint</Button>
+                <Button color="info" onClick={toggleUpdatingModal}>Update</Button>
+                <OwnershipDropdown assetId={asset.id} />
+              </>
+            )}
+            <Button color="link" disabled={asset.balance === 0}>Transfer</Button>
           </Button.Group>
         </Content>
 

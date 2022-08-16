@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
 import Web3 from "web3";
 
-import LSP7Mintable from '@lukso/lsp-smart-contracts/artifacts/LSP7Mintable.json';
+import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
 import { useAuthenticatedUser } from "../../../../../../hooks";
 
 declare var window: any;
@@ -23,8 +23,9 @@ function TransferModal({ assetId, onClose }: TransferModalProps) {
     try {
       setSaving(true);
 
-      const LSP7MintableAbi = LSP7Mintable.abi as any;
-      const myToken = new web3.eth.Contract(LSP7MintableAbi, assetId);
+      const LSP7DigitalAssetAbi = LSP7DigitalAsset.abi as any;
+      const myToken = new web3.eth.Contract(LSP7DigitalAssetAbi, assetId);
+
       await myToken.methods.transferOwnership(newOwner).send({ from: address });
       onClose();
     } catch (e) {
@@ -58,11 +59,11 @@ function TransferModal({ assetId, onClose }: TransferModalProps) {
             </Form.Field>
           </form>
         </Modal.Card.Body>
-        <Modal.Card.Footer onClick={onSubmit}>
+        <Modal.Card.Footer>
           <Button size="small" color="danger" onClick={onClose}>
             Close
           </Button>
-          <Button size="small" color="success" loading={saving} disabled={saving}>
+          <Button size="small" color="success" loading={saving} disabled={saving} onClick={onSubmit}>
             Transfer
           </Button>
         </Modal.Card.Footer>
