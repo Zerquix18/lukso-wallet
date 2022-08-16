@@ -6,6 +6,7 @@ import { IAsset } from "../../../../models";
 
 import MintModal from "./MintModal";
 import OwnershipDropdown from "./OwnershipDropdown";
+import TransferModal from "./TransferModal";
 import UpdateModal from "./UpdateModal";
 
 interface AssetProps {
@@ -16,6 +17,8 @@ function Asset({ asset }: AssetProps) {
   const { address } = useAuthenticatedUser();
   const [updatingModal, setUpdatingModal] = useState(false);
   const [mintingModal, setMintingModal] = useState(false);
+  const [transferModal, setTransferModal] = useState(false);
+
   const image = asset.metadata.icon ? 'https://ipfs.io/ipfs/' + asset.metadata.icon[0].url.replace('ipfs://', '') : null;
 
   const toggleMintingModal = () => {
@@ -23,6 +26,9 @@ function Asset({ asset }: AssetProps) {
   };
   const toggleUpdatingModal = () => {
     setUpdatingModal(state => ! state);
+  };
+  const toggleTransferModal = () => {
+    setTransferModal(state => ! state);
   };
 
   return (
@@ -74,12 +80,13 @@ function Asset({ asset }: AssetProps) {
                 <OwnershipDropdown assetId={asset.id} />
               </>
             )}
-            <Button color="link" disabled={asset.balance === 0}>Transfer</Button>
+            <Button color="link" disabled={asset.balance === 0} onClick={toggleTransferModal}>Transfer</Button>
           </Button.Group>
         </Content>
 
         { mintingModal && <MintModal asset={asset} onClose={toggleMintingModal} /> }
         { updatingModal && <UpdateModal asset={asset} onClose={toggleUpdatingModal} /> }
+        { transferModal && <TransferModal asset={asset} onClose={toggleTransferModal} /> }
       </Card.Content>
     </Card>
   );
