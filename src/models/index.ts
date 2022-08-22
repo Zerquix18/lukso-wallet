@@ -57,3 +57,8 @@ export interface IAsset {
   balance: number;
   totalSupply: number;
 }
+
+export interface IVault {
+  id: string;
+  owner: string;
+}
