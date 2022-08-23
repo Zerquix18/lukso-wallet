@@ -11,7 +11,6 @@ function Sidebar() {
     { path: '/send', name: 'Send LYX' },
     { path: '/controllers', name: 'Controllers' },
     { path: '/vaults', name: 'Vaults' },
-    { path: '/activity', name: 'Activity' },
     { path: '/sign', name: 'Sign & Recover' },
   ];
 
