@@ -1,12 +1,8 @@
-import { toast } from "bulma-toast";
 import { useState } from "react";
 import { Button, Form, Notification, Tag } from "react-bulma-components";
-import Web3 from "web3";
 
 import { useAuthenticatedUser } from "../../../../hooks";
 import { sendToast } from "../../../../utils";
-
-declare var window: any;
 
 type ReturnedSignature = {
   signature: string;
@@ -14,7 +10,7 @@ type ReturnedSignature = {
 }
 
 function SignForm() {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ReturnedSignature | null>(null);
@@ -23,8 +19,6 @@ function SignForm() {
     setLoading(true);
 
     sendToast({ message: 'Please sign the message using your wallet...', type: 'is-warning' });
-
-    const web3 = new Web3(window.ethereum);
 
     try {
       const result = await web3.eth.sign(message, address);

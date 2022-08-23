@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Button, Form, Notification } from "react-bulma-components";
 
-import Web3 from "web3";
+import { useAuthenticatedUser } from "../../../../hooks";
 
 import { sendToast } from "../../../../utils";
 
-declare var window: any;
-
 function RecoverForm() {
+  const { web3 } = useAuthenticatedUser();
   const [message, setMessage] = useState('');
   const [signature, setSignature] = useState('');
 
@@ -17,7 +16,6 @@ function RecoverForm() {
 
   const onSubmit = () => {
     try {
-      const web3 = new Web3(window.ethereum);
       const result = web3.eth.accounts.recover(message, signature);
       setResult(result);
     } catch (e) {

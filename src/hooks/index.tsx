@@ -1,6 +1,7 @@
 // to split into multiple files once there are enough
 
-import { useCallback, useContext } from "react";
+import { useCallback, useContext, useRef } from "react";
+import Web3 from "web3";
 import { AuthenticationContext } from "../providers/Authentication";
 
 /*
@@ -40,5 +41,8 @@ export function useAuthenticatedUser() {
     throw new Error('User is not authenticated.');
   }
 
-  return user;
+  const web3Ref = useRef(new Web3((window as any).ethereum));
+  const web3 = web3Ref.current;
+
+  return { ...user, web3 };
 }
