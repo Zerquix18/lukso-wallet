@@ -18,7 +18,7 @@ function Unauthenticated() {
   const { authenticate } = useAuthentication();
   const [error, setError] = useState('');
 
-  const onAuthenticate = useCallback(async () => {
+  const onAuthenticate = useCallback(async (method = 'eth_requestAccounts') => {
     try {
       if (requested) {
         return;
@@ -30,10 +30,7 @@ function Unauthenticated() {
         throw new Error('Could not find a wallet (window.ethereum is not defined)');
       }
 
-      let addresses = await window.ethereum.request({ method: 'eth_accounts' });
-      if (addresses.length === 0) {
-        addresses = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      }
+      const addresses = await window.ethereum.request({ method });
 
       if (addresses.length === 0) {
         throw new Error('Did not receive an address to use.');
@@ -54,7 +51,7 @@ function Unauthenticated() {
       console.log(e);
       setError((e as Error).message);
     } finally {
-      requested = true;
+      requested = false;
     }
   }, [authenticate]);
 
@@ -62,8 +59,12 @@ function Unauthenticated() {
     setError('');
   };
 
-  useEffect(() => {
+  const onAuthenticateClick = () => {
     onAuthenticate();
+  };
+  
+  useEffect(() => {
+    onAuthenticate('eth_accounts');
   }, [onAuthenticate]);
 
   return (
@@ -85,7 +86,7 @@ function Unauthenticated() {
           Welcome to the Lukso wallet! Please authenticate with one of the methods below:
 
           <Button.Group className="is-centered mt-3">
-            <Button color="primary" onClick={onAuthenticate}>Sign in Browser Wallet</Button>
+            <Button color="primary" onClick={onAuthenticateClick}>Sign in Browser Wallet</Button>
           </Button.Group>
         </Box>
       </div>
