@@ -14,6 +14,8 @@ export interface IAuthenticationState {
   user: IAuthenticationStateUser | null;
 }
 
+export type IControllerType = 'EOA' | 'UP' | 'URD' | 'KM' | 'SM';
+
 export type IControllerPermission = (
   'SUPER_DELEGATE_PERMISSION' |
   'SUPER_STATIC_CALL' |
@@ -38,7 +40,7 @@ export type IControllerPermissions = {
 
 export interface IController {
   address: string;
-  isEOA: boolean;
+  type: IControllerType;
   permissions: IControllerPermissions;
   allowedAddresses: string[] | null;
   allowedFunctions: string[] | null;

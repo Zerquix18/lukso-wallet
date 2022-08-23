@@ -1,6 +1,10 @@
 import { toast, Options } from "bulma-toast";
 import { IControllerPermissions } from "../models";
 
+import getControllerType from './others/getControllerType';
+
+export  { getControllerType };
+
 export function stringToPermissions(string: string) {
   const binaryString = parseInt(string).toString(2);
   const completeBinary = binaryString.padStart(15, '0');

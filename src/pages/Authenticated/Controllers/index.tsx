@@ -2,20 +2,18 @@ import { useRef } from "react";
 import { Columns, Heading, Progress } from "react-bulma-components";
 import { useQuery } from "@tanstack/react-query";
 
-import Web3 from "web3";
 import { ERC725, ERC725JSONSchema } from '@erc725/erc725.js';
 import LSP6KeyManager from '@erc725/erc725.js/schemas/LSP6KeyManager.json';
 
 import { DEFAULT_CONFIG, DEFAULT_PROVIDER } from "../../../constants";
 import { useAuthenticatedUser } from "../../../hooks";
 import { IController } from "../../../models";
-import { stringToPermissions } from "../../../utils";
+import { getControllerType, stringToPermissions } from "../../../utils";
+
 import Controller from "./Controller";
 
-declare var window: any;
-
 function Controllers() {
-  const { address } = useAuthenticatedUser();
+  const { address} = useAuthenticatedUser();
 
   const erc725Ref = useRef(new ERC725(LSP6KeyManager as ERC725JSONSchema[], address, DEFAULT_PROVIDER, DEFAULT_CONFIG));
   const erc725 = erc725Ref.current;
@@ -33,26 +31,28 @@ function Controllers() {
         'AddressPermissions:AllowedERC725YKeys:<address>',
       ];
 
-      const promises = extraKeys.map(keyName => erc725.fetchData({ keyName, dynamicKeyParts: address }));
-
-      // @todo maybe have a single instance shared in the state?
-      const web3 = new Web3(window.ethereum);
-      const isEOA = (await web3.eth.getCode(address)) === '0x';
-
-      const result = await Promise.all(promises);
+      const dataToFetch = extraKeys.map(keyName => ({ keyName, dynamicKeyParts: address }));
+      const result = await Promise.all([
+        getControllerType(address),
+        erc725.fetchData(dataToFetch),
+      ]);
 
       const [
-        { value: permissionsValue },
-        { value: allowedAddresses },
-        { value: allowedFunctions },
-        { value: allowedStandards },
-        { value: allowedERC725YKeys },
+        type,
+        [
+          { value: permissionsValue },
+          { value: allowedAddresses },
+          { value: allowedFunctions },
+          { value: allowedStandards },
+          { value: allowedERC725YKeys },
+        ]
       ] = result;
 
       const permissions = stringToPermissions(permissionsValue as string);
+
       return {
         address,
-        isEOA,
+        type,
         permissions,
         allowedAddresses: allowedAddresses as string[] | null,
         allowedFunctions: allowedFunctions as string[] | null,

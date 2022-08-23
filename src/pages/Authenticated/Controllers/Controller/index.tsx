@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Card, Content, Heading, Media } from "react-bulma-components";
-import { IController } from "../../../../models";
+import { IController, IControllerType } from "../../../../models";
 import PermissionModal from "./PermissionModal";
 
 interface ControllerProps {
@@ -8,7 +8,7 @@ interface ControllerProps {
 }
 
 function Controller({ controller }: ControllerProps) {
-  const { address, isEOA, permissions } = controller;
+  const { address, type, permissions } = controller;
   const [permissionsModalOpen, setPermissionsModalOpen] = useState(false);
 
   const imageUrl = `https://effigy.im/a/${address}.png`;
@@ -26,7 +26,7 @@ function Controller({ controller }: ControllerProps) {
           <Media.Item>
             <Heading size={4}>{ address.slice(0, 6) + '...' + address.slice(-6) }</Heading>
             <Heading subtitle size={6}>
-              { isEOA ? 'Externally Owned Account' : 'Smart Contract' }
+              { controllerTypes[type] }
             </Heading>
           </Media.Item>
         </Media>
@@ -43,5 +43,13 @@ function Controller({ controller }: ControllerProps) {
     </Card>
   )
 }
+
+const controllerTypes: {[key in IControllerType]: string } = {
+  UP: 'Universal Profile',
+  KM: 'Key Manager',
+  EOA: 'Externally Owned Account',
+  SM: 'Smart Contract',
+  URD: 'Universal Receiver Delegate',
+};
 
 export default Controller;

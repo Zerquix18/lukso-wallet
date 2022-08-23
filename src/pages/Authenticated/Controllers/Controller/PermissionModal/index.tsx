@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import Web3 from 'web3';
 import { Button, Form, Modal } from 'react-bulma-components';
 
 import UniversalProfile from "@lukso/lsp-smart-contracts/artifacts/UniversalProfile.json";
 
 import { IController, IControllerPermission } from '../../../../../models';
 import { useAuthenticatedUser } from '../../../../../hooks';
-import { permissionsToString } from '../../../../../utils';
-
-declare var window: any;
+import { permissionsToString, sendToast } from '../../../../../utils';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface PermissionModalProps {
   controller: IController;
@@ -16,27 +14,33 @@ interface PermissionModalProps {
 }
 
 function PermissionModal({ controller, onClose }: PermissionModalProps) {
+  const { address, web3 } = useAuthenticatedUser();
+  const queryClient = useQueryClient();
+
   const [saving, setSaving] = useState(false);
-  const { address } = useAuthenticatedUser();
   const [permissions, setPermissions] = useState(controller.permissions);
+
   const allPermissions = Object.keys(permissions) as IControllerPermission[];
 
   const onSave = async () => {
     try {
       setSaving(true);
 
-      const web3 = new Web3(window.ethereum);
+      sendToast({ message: 'Please approve the transaction using your wallet...', type: 'is-warning' });
 
       const UniversalProfileContractAbi = UniversalProfile.abi as any;
       const universalProfileContract = new web3.eth.Contract(UniversalProfileContractAbi, address);
   
+      // https://docs.lukso.tech/standards/universal-profile/lsp6-key-manager/#types-of-permissions
       const key = '0x4b80742de2bf82acb3630000' + controller.address.slice(2);
       const value = permissionsToString(permissions);
   
       await universalProfileContract.methods["setData(bytes32,bytes)"](key, value).send({ from: address });
-      console.log('Permissions successfully changed.');
+      sendToast({ message: 'Permissions successfully set!', type: 'is-success' });
+      queryClient.invalidateQueries(['controllers']);
+      onClose();
     } catch (e) {
-      alert((e as Error).message);
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setSaving(false);
     }
