@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button, Form, Notification } from "react-bulma-components";
+
 import Web3 from "web3";
+
+import { sendToast } from "../../../../utils";
 
 declare var window: any;
 
@@ -8,22 +11,17 @@ function RecoverForm() {
   const [message, setMessage] = useState('');
   const [signature, setSignature] = useState('');
 
-  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
 
   const canSubmit = message.length > 0 && signature.length > 0;
 
   const onSubmit = () => {
     try {
-      setLoading(true);
       const web3 = new Web3(window.ethereum);
       const result = web3.eth.accounts.recover(message, signature);
       setResult(result);
     } catch (e) {
-      alert((e as Error).message);
-      console.log(e);
-    } finally {
-      setLoading(false);
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     }
   };
 
@@ -59,7 +57,7 @@ function RecoverForm() {
       </Form.Field>
 
       <div style={{ textAlign: 'center' }}>
-        <Button type="button" color="primary" onClick={onSubmit} disabled={! canSubmit || loading}>Sign</Button>
+        <Button type="button" color="primary" onClick={onSubmit} disabled={! canSubmit}>Recover</Button>
       </div>
     </form>
   );

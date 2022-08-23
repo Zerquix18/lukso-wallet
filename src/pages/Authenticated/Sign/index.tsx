@@ -34,8 +34,10 @@ function Sign() {
         </Tabs.Tab>
       </Tabs>
 
-      { currentTab === 'sign' && <SignForm /> }
-      { currentTab === 'recover' && <RecoverForm /> }
+      <div style={{ maxWidth: 500, margin: '0 auto' }}>
+        { currentTab === 'sign' && <SignForm /> }
+        { currentTab === 'recover' && <RecoverForm /> }
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { toast, Options } from "bulma-toast";
 import { IControllerPermissions } from "../models";
 
 export function stringToPermissions(string: string) {
@@ -46,4 +47,14 @@ export function permissionsToString(permissions: IControllerPermissions) {
 
   const hex = parseInt(completeBinary, 2).toString(16);
   return '0x' + hex.padStart(64, '0');
+}
+
+export function sendToast(options: Options) {
+  toast({
+    dismissible: true,
+    pauseOnHover: true,
+    position: 'bottom-left',
+    duration: 5000,
+    ...options,
+  });
 }
