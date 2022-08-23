@@ -1,22 +1,16 @@
 import { useState } from "react";
 import { Box, Button, Form, Heading, Notification } from "react-bulma-components";
-import Web3 from "web3";
-import UniversalProfile from "@lukso/lsp-smart-contracts/artifacts/UniversalProfile.json";
 import { useQuery } from "@tanstack/react-query";
+
 import { useAuthenticatedUser } from "../../../hooks";
-
-declare var window: any;
-const web3 = new Web3(window.ethereum);
-
-type Response = { success: boolean; response: string };
+import { sendToast } from "../../../utils";
 
 function Send() {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState(0);
 
   const [sending, setSending] = useState(false);
-  const [response, setResponse] = useState<Response | null>(null);
 
   const fetchCurrentBalance = async () => {
     const result = await web3.eth.getBalance(address);
@@ -35,40 +29,42 @@ function Send() {
   const onSubmit = async () => {
     try {
       setSending(true);
-      setResponse(null);
+      sendToast({ message: 'Please approve the transaction using your wallet...', type: 'is-warning' });
 
-      const UniversalProfileContractAbi = UniversalProfile.abi as any;
-      const universalProfileContract = new web3.eth.Contract(UniversalProfileContractAbi, address);
-      
       const weiAmount = web3.utils.toWei(String(amount));
 
       // https://docs.lukso.tech/guides/universal-profile/transfer-lyx#step-3---encode-the-payload-to-transfer-lyx
-      await universalProfileContract.methods.execute(0, recipient, weiAmount, '0x').send({ from: address });
+      await web3.eth.sendTransaction({
+        from: address,
+        to: recipient,
+        value: weiAmount,
+      });
+
       setAmount(0);
-      setResponse({ success: true, response: `Successfully sent ${amount} LYX!` });
+      sendToast({ message: `Successfully sent ${amount} LYX!`, type: 'is-success', duration: 5000 });
     } catch (e) {
-      console.log(e);
-      setResponse({ success: false, response: (e as Error).message });
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setSending(false);
     }
   };
 
-  const canSubmit = true; // amount > 0;
+  const canSubmit = amount > 0;
 
   return (
     <div>
       <Heading>
         Send LYX
-        <Heading subtitle>Send LYX to any address or Universal Profile</Heading>
       </Heading>
+      <Heading subtitle>Send LYX to any address or Universal Profile</Heading>
 
       <Box>
-        { response ? (
-          <Notification color={response.success ? 'success' : 'danger'}>
-            { response.response }
+        { currentBalance === 0 && (
+          <Notification color="warning">
+            Your Universal Profile does not have any funds. Please fund your UP using the&nbsp;
+            <a href="https://faucet.l16.lukso.network/" target="_blank" rel="noreferrer">Faucet</a>.
           </Notification>
-        ) : null}
+        )}
 
         <form>
           <Form.Field>
@@ -106,7 +102,15 @@ function Send() {
           )}
         </Form.Field>
           <div style={{ textAlign: 'center', marginTop: 10 }}>
-            <Button type="button" color="primary" disabled={! canSubmit || sending} onClick={onSubmit}>Send LYX</Button>
+            <Button
+              type="button"
+              color="primary"
+              disabled={! canSubmit || sending || ! currentBalance}
+              loading={sending}
+              onClick={onSubmit}
+              >
+                Send LYX
+              </Button>
           </div>
         </form>
       </Box>
