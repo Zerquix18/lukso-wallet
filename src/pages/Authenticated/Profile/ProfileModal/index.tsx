@@ -1,16 +1,16 @@
 import { useRef, useState } from "react";
 import { Modal, Form, Button } from "react-bulma-components";
+
 import { LSPFactory, LSP3Profile } from "@lukso/lsp-factory.js";
 import UniversalProfile from "@lukso/lsp-smart-contracts/artifacts/UniversalProfile.json";
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
-import Web3 from "web3";
+
 import { CHAIN_ID, DEFAULT_CONFIG, DEFAULT_PROVIDER, NETWORK_URL } from "../../../../constants";
+import { useAuthenticatedUser } from "../../../../hooks";
+import { sendToast } from "../../../../utils";
 
 import ProfileModalLinks from "./ProfileModalLinks";
 import ProfileModalTags from "./ProfileModalTags";
-import { useAuthenticatedUser } from "../../../../hooks";
-
-declare var window: any;
 
 interface ProfileModalProps {
   profile: LSP3Profile;
@@ -28,10 +28,8 @@ const schema: ERC725JSONSchema[] = [
   },
 ];
 
-const web3 = new Web3(window.ethereum);
-
 function ProfileModal({ profile, onSuccess, onClose }: ProfileModalProps) {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [name, setName] = useState(profile.name);
   const [description, setDescription] = useState(profile.description);
   const [tags, setTags] = useState(profile.tags || []);
@@ -83,8 +81,9 @@ function ProfileModal({ profile, onSuccess, onClose }: ProfileModalProps) {
       ).send({ from: address });
 
       onSuccess(uploadResult.json.LSP3Profile);
+      sendToast({ message: 'Profile successfuly updated!', type: 'is-success' });
     } catch (e) {
-      console.log(e);
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setSaving(false);
     }
