@@ -12,6 +12,7 @@ function Sidebar() {
     { path: '/controllers', name: 'Controllers' },
     { path: '/vaults', name: 'Vaults' },
     { path: '/sign', name: 'Sign & Recover' },
+    { path: '/profile', name: 'My Profile' },
   ];
 
   return (

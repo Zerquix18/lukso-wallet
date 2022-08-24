@@ -42,7 +42,7 @@ function LayoutNavbar() {
             <Heading size={3}>Lukso Wallet</Heading>
           </Navbar.Item>
         </Navbar.Brand>
-        <Navbar.Container align="right" alignItems="center">
+        <Navbar.Container align="right" style={{ marginTop: 12.5 }}>
           <Dropdown
             icon={<Icon><i aria-hidden="true" className="fas fa-angle-down"/></Icon>}
             label={address.slice(0, 6) + '...' + address.slice(-4)}
