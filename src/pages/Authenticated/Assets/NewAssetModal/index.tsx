@@ -3,7 +3,6 @@ import { Button, Form, Modal } from "react-bulma-components";
 
 import { LSPFactory } from '@lukso/lsp-factory.js';
 
-import Web3 from "web3";
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP12IssuedAssetsSchema from '@erc725/erc725.js/schemas/LSP12IssuedAssets.json';
 import LSP0ERC725Account from '@lukso/lsp-smart-contracts/artifacts/UniversalProfile.json';
@@ -11,14 +10,12 @@ import LSP0ERC725Account from '@lukso/lsp-smart-contracts/artifacts/UniversalPro
 import { useAuthenticatedUser } from "../../../../hooks";
 import { CHAIN_ID, IPFS_GATEWAY_API_BASE_URL } from "../../../../constants";
 
-declare var window: any;
-
 interface NewAssetModalProps {
   onClose: () => void;
 }
 
 function NewAssetModal({ onClose }: NewAssetModalProps) {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [name, setName] = useState('');
   const [symbol, setSymbol] = useState('');
   const [isNft, setIsNft] = useState(false);
@@ -39,8 +36,6 @@ function NewAssetModal({ onClose }: NewAssetModalProps) {
         assets: [],
       };
 
-      // does not work without this
-      const web3 = new Web3(window.ethereum);
       // @ts-ignore
       const lspFactory = new LSPFactory(web3.currentProvider, { chainId: CHAIN_ID });
 

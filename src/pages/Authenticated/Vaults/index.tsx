@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { Button, Columns, Heading, Progress } from "react-bulma-components";
 
-import Web3 from "web3";
 import LSP10ReceivedVaults from '@erc725/erc725.js/schemas/LSP10ReceivedVaults.json';
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP9Vault from '@lukso/lsp-smart-contracts/artifacts/LSP9Vault.json';
@@ -13,12 +12,10 @@ import NewVaultModal from "./NewVaultModal";
 import { useQuery } from "@tanstack/react-query";
 import Vault from "./Vault";
 
-declare var window: any;
-const web3 = new Web3(window.ethereum);
 const LSP9VaultAbi = LSP9Vault.abi as any;
 
 function Vaults() {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
 
   const erc725Ref = useRef(new ERC725(LSP10ReceivedVaults as ERC725JSONSchema[], address, DEFAULT_PROVIDER, DEFAULT_CONFIG));
   const erc725 = erc725Ref.current;

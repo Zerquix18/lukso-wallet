@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
 
-import Web3 from "web3";
 import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
 
 import { IAsset } from "../../../../../models";
@@ -12,10 +11,8 @@ interface TransferModalProps {
   onClose: () => void;
 }
 
-declare var window: any;
-
 function TransferModal({ asset, onClose }: TransferModalProps) {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
 
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState(0);
@@ -29,7 +26,6 @@ function TransferModal({ asset, onClose }: TransferModalProps) {
   const onSubmit = async () => {
     try {
       setSending(true);
-      const web3 = new Web3(window.ethereum);
       const weiAmount = web3.utils.toWei(String(amount));
       const LSP7DigitalAssetAbi = LSP7DigitalAsset.abi as any;
       const myToken = new web3.eth.Contract(LSP7DigitalAssetAbi, asset.id);

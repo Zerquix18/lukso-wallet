@@ -1,23 +1,18 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
-import Web3 from "web3";
 
 import LSP7Mintable from '@lukso/lsp-smart-contracts/artifacts/LSP7Mintable.json';
 
 import { IAsset } from "../../../../../models";
 import { useAuthenticatedUser } from "../../../../../hooks";
 
-declare var window: any;
-
 interface MintModalProps {
   asset: IAsset;
   onClose: () => void;
 }
 
-const web3 = new Web3(window.ethereum);
-
 function MintModal({ asset, onClose }: MintModalProps) {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [amount, setAmount] = useState(0);
   const [saving, setSaving] = useState(false);
 

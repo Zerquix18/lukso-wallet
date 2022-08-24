@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button, Modal } from "react-bulma-components";
 
-import Web3 from "web3";
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP9Vault from '@lukso/lsp-smart-contracts/artifacts/LSP9Vault.json';
 import LSP10ReceivedVaults from '@erc725/erc725.js/schemas/LSP10ReceivedVaults.json';
@@ -14,17 +13,14 @@ interface NewVaultModalProps {
   onClose: () => void;
 }
 
-declare var window: any;
-
 function NewVaultModal({ onClose }: NewVaultModalProps) {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [creating, setCreating] = useState(false);
 
   const onCreate = async () => {
     try {
       setCreating(true);
 
-      const web3 = new Web3(window.ethereum);
       const LSP9VaultAbi = LSP9Vault.abi as any;
       const vaultContract = new web3.eth.Contract(LSP9VaultAbi);
       const newContract = await vaultContract.deploy({

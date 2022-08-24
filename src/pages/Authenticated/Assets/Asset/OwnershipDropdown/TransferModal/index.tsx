@@ -1,21 +1,16 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
-import Web3 from "web3";
 
 import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
 import { useAuthenticatedUser } from "../../../../../../hooks";
-
-declare var window: any;
 
 interface TransferModalProps {
   assetId: string;
   onClose: () => void;
 }
 
-const web3 = new Web3(window.ethereum);
-
 function TransferModal({ assetId, onClose }: TransferModalProps) {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [newOwner, setNewOwner] = useState('');
   const [saving, setSaving] = useState(false);
 

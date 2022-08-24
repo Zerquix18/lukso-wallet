@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { Button, Heading, Progress, Notification, Columns } from "react-bulma-components";
 import { useQuery } from "@tanstack/react-query";
 
-import Web3 from "web3";
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP3UniversalProfileMetadata from '@erc725/erc725.js/schemas/LSP3UniversalProfileMetadata.json';
 import LSP4schema from '@erc725/erc725.js/schemas/LSP4DigitalAsset.json';
@@ -16,12 +15,8 @@ import { IAsset } from "../../../models";
 import NewAssetModal from "./NewAssetModal";
 import Asset from "./Asset";
 
-declare var window: any;
-
-const web3 = new Web3(window.ethereum);
-
 function Assets() {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
 
   const erc725Ref = useRef(new ERC725(LSP3UniversalProfileMetadata as ERC725JSONSchema[], address, DEFAULT_PROVIDER, DEFAULT_CONFIG));
   const erc725 = erc725Ref.current;

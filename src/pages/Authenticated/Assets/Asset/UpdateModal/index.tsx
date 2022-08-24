@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
 
-import Web3 from "web3";
 import { LSPFactory } from "@lukso/lsp-factory.js";
 import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
@@ -16,10 +15,8 @@ interface UpdateModalProps {
   onClose: () => void;
 }
 
-declare var window: any;
-
 function UpdateModal({ asset, onClose }: UpdateModalProps) {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [description, setDescription] = useState(asset.metadata.description);
   const [newIcon, setNewIcon] = useState<File | null>(null);
 
@@ -28,7 +25,6 @@ function UpdateModal({ asset, onClose }: UpdateModalProps) {
   const onSave = async () => {
     try {
       setSaving(true);
-      const web3 = new Web3(window.ethereum);
 
       const LSP4MetaData = {
         description,

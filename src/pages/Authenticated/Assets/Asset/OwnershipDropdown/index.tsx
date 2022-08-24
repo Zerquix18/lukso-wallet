@@ -1,7 +1,6 @@
 import { Fragment, useState } from "react";
 import { Dropdown, Icon } from "react-bulma-components";
 
-import Web3 from "web3";
 import LSP7Mintable from '@lukso/lsp-smart-contracts/artifacts/LSP7Mintable.json';
 
 import { useAuthenticatedUser } from "../../../../../hooks";
@@ -12,10 +11,8 @@ interface OwnershipDropdownProps {
   assetId: string;
 }
 
-declare var window: any;
-
 function OwnershipDropdown({ assetId }: OwnershipDropdownProps) {
-  const { address } = useAuthenticatedUser();
+  const { address, web3 } = useAuthenticatedUser();
   const [transferModalOpen, setTransferModalOpen] = useState(false);
 
   const toggleTransferModal = () => {
@@ -32,7 +29,6 @@ function OwnershipDropdown({ assetId }: OwnershipDropdownProps) {
           return;
         }
 
-        const web3 = new Web3(window.ethereum);
         const LSP7MintableAbi = LSP7Mintable.abi as any;
         const myToken = new web3.eth.Contract(LSP7MintableAbi, assetId);
         await myToken.methods.renounceOwnership().send({ from: address });
