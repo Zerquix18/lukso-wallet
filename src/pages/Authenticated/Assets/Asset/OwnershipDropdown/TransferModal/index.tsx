@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
+import { useQueryClient } from "@tanstack/react-query";
 
 import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
 import { useAuthenticatedUser } from "../../../../../../hooks";
+import { sendToast } from "../../../../../../utils";
 
 interface TransferModalProps {
   assetId: string;
@@ -11,6 +13,7 @@ interface TransferModalProps {
 
 function TransferModal({ assetId, onClose }: TransferModalProps) {
   const { address, web3 } = useAuthenticatedUser();
+  const queryClient = useQueryClient();
   const [newOwner, setNewOwner] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -18,13 +21,17 @@ function TransferModal({ assetId, onClose }: TransferModalProps) {
     try {
       setSaving(true);
 
+      sendToast({ message: 'Please approve the upcoming transactions using your wallet...', type: 'is-warning' });
       const LSP7DigitalAssetAbi = LSP7DigitalAsset.abi as any;
       const myToken = new web3.eth.Contract(LSP7DigitalAssetAbi, assetId);
 
       await myToken.methods.transferOwnership(newOwner).send({ from: address });
+      sendToast({ message: `Successfully updated asset.`, type: 'is-success' });
+      queryClient.invalidateQueries(['assets']);
       onClose();
     } catch (e) {
       console.log(e);
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setSaving(false);
     }
