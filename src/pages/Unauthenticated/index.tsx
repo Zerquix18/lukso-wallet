@@ -64,7 +64,13 @@ function Unauthenticated() {
   };
   
   useEffect(() => {
-    onAuthenticate('eth_accounts');
+    const onLoad = () => {
+      onAuthenticate('eth_accounts');
+    };
+    window.onload = onLoad;
+    return () => {
+      window.onload = null;
+    }
   }, [onAuthenticate]);
 
   return (
