@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { LSPFactory } from '@lukso/lsp-factory.js';
-
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP12IssuedAssetsSchema from '@erc725/erc725.js/schemas/LSP12IssuedAssets.json';
 import LSP0ERC725Account from '@lukso/lsp-smart-contracts/artifacts/UniversalProfile.json';
 
 import { useAuthenticatedUser } from "../../../../hooks";
 import { CHAIN_ID, IPFS_GATEWAY_API_BASE_URL } from "../../../../constants";
+import { sendToast } from "../../../../utils";
 
 interface NewAssetModalProps {
   onClose: () => void;
@@ -16,6 +17,8 @@ interface NewAssetModalProps {
 
 function NewAssetModal({ onClose }: NewAssetModalProps) {
   const { address, web3 } = useAuthenticatedUser();
+  const queryClient = useQueryClient();
+
   const [name, setName] = useState('');
   const [symbol, setSymbol] = useState('');
   const [isNft, setIsNft] = useState(false);
@@ -39,7 +42,7 @@ function NewAssetModal({ onClose }: NewAssetModalProps) {
       // @ts-ignore
       const lspFactory = new LSPFactory(web3.currentProvider, { chainId: CHAIN_ID });
 
-      console.log('starting up..');
+      sendToast({ message: 'Please approve the upcoming transactions using your wallet...', type: 'is-warning' });
 
       const result = await lspFactory.LSP7DigitalAsset.deploy(
         {
@@ -66,7 +69,7 @@ function NewAssetModal({ onClose }: NewAssetModalProps) {
         },
       );
 
-      console.log(result);
+      sendToast({ message: 'Asset successfully deployed! Now let\'s update your profile', type: 'is-success' });
 
       const deployedLSP7DigitalAssetContract = result.LSP7DigitalAsset;
       const options = {
@@ -81,7 +84,6 @@ function NewAssetModal({ onClose }: NewAssetModalProps) {
       );
 
       const LSP12IssuedAssets = await erc725LSP12IssuedAssets.getData('LSP12IssuedAssets[]');
-      console.log(LSP12IssuedAssets);
       (LSP12IssuedAssets.value as string[]).push(deployedLSP7DigitalAssetContract.address);
       
       const LSP12IssuedAssetsLength = LSP12IssuedAssets.value as string[];
@@ -98,18 +100,18 @@ function NewAssetModal({ onClose }: NewAssetModalProps) {
         },
       ]);
 
-      console.log(encodedErc725Data);
-
       const LSP0ERC725AccountAbi = LSP0ERC725Account.abi as any;
       const profileContract = new web3.eth.Contract(LSP0ERC725AccountAbi, address);
-      const receipt = await profileContract.methods['setData(bytes32[],bytes[])'](
+      await profileContract.methods['setData(bytes32[],bytes[])'](
         encodedErc725Data.keys,
         encodedErc725Data.values
       ).send({ from: address });
 
-      console.log(receipt);
+      sendToast({ message: 'Asset successfully created.', type: 'is-success' });
+      queryClient.invalidateQueries(['assets']);
+      onClose();
     } catch (e) {
-      console.log(e);
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setSaving(false);
     }
@@ -199,11 +201,11 @@ function NewAssetModal({ onClose }: NewAssetModalProps) {
             </Form.Field>
           </form>
         </Modal.Card.Body>
-        <Modal.Card.Footer alignItems="flex-end" onClick={onSave}>
+        <Modal.Card.Footer alignItems="flex-end">
           <Button color="danger" onClick={onClose}>
             Close
           </Button>
-          <Button color="success" loading={saving} disabled={! canSubmit || saving}>
+          <Button color="success" loading={saving} disabled={! canSubmit || saving} onClick={onSave}>
             Save
           </Button>
         </Modal.Card.Footer>
