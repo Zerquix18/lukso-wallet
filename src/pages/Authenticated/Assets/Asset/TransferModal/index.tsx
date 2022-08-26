@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
+import { useQueryClient } from "@tanstack/react-query";
 
 import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
 
 import { IAsset } from "../../../../../models";
 import { useAuthenticatedUser } from "../../../../../hooks";
+import { sendToast } from "../../../../../utils";
 
 interface TransferModalProps {
   asset: IAsset;
@@ -13,6 +15,7 @@ interface TransferModalProps {
 
 function TransferModal({ asset, onClose }: TransferModalProps) {
   const { address, web3 } = useAuthenticatedUser();
+  const queryClient = useQueryClient();
 
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState(0);
@@ -26,12 +29,17 @@ function TransferModal({ asset, onClose }: TransferModalProps) {
   const onSubmit = async () => {
     try {
       setSending(true);
+      sendToast({ message: 'Please approve the upcoming transaction using your wallet...', type: 'is-warning' });
+
       const weiAmount = web3.utils.toWei(String(amount));
       const LSP7DigitalAssetAbi = LSP7DigitalAsset.abi as any;
       const myToken = new web3.eth.Contract(LSP7DigitalAssetAbi, asset.id);
       await myToken.methods.transfer(address, recipient, weiAmount, false, '0x').send({ from: address });
+      sendToast({ message: `Successfully transferred.`, type: 'is-success' });
+      onClose();
+      queryClient.invalidateQueries(['assets']);
     } catch (e) {
-      console.log(e);
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setSending(false);
     }
@@ -85,6 +93,7 @@ function TransferModal({ asset, onClose }: TransferModalProps) {
               <Button
                 type="button"
                 color="primary"
+                loading={sending}
                 disabled={! canSubmit || sending}
                 onClick={onSubmit}
               >

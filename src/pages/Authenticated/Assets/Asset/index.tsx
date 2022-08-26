@@ -49,24 +49,24 @@ function Asset({ asset }: AssetProps) {
           <hr />
 
           <Tag.Group hasAddons>
-            <Tag color="dark">
+            <Tag color="light">
               Owner
             </Tag>
             <Tag>
               { asset.owner.slice(0, 4) + '...' + asset.owner.slice(-4) }
               { asset.owner === address ? ' (you)' : null}
             </Tag>
-            <Tag color="info">
-              Total Supply
-            </Tag>
-            <Tag>
-              { asset.totalSupply }
-            </Tag>
             <Tag color="primary">
               Decimals
             </Tag>
             <Tag>
               { asset.decimals }
+            </Tag>
+            <Tag color="info">
+              Total Supply
+            </Tag>
+            <Tag>
+              { asset.totalSupply }
             </Tag>
           </Tag.Group>
 

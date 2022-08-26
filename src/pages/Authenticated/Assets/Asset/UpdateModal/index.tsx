@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { LSPFactory } from "@lukso/lsp-factory.js";
 import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
@@ -9,6 +10,7 @@ import LSP4DigitalAsset from '@erc725/erc725.js/schemas/LSP4DigitalAsset.json';
 import { IAsset } from "../../../../../models";
 import { CHAIN_ID, IPFS_GATEWAY_API_BASE_URL } from "../../../../../constants";
 import { useAuthenticatedUser } from "../../../../../hooks";
+import { sendToast } from "../../../../../utils";
 
 interface UpdateModalProps {
   asset: IAsset;
@@ -17,6 +19,7 @@ interface UpdateModalProps {
 
 function UpdateModal({ asset, onClose }: UpdateModalProps) {
   const { address, web3 } = useAuthenticatedUser();
+  const queryClient = useQueryClient();
   const [description, setDescription] = useState(asset.metadata.description);
   const [newIcon, setNewIcon] = useState<File | null>(null);
 
@@ -33,6 +36,8 @@ function UpdateModal({ asset, onClose }: UpdateModalProps) {
         images: asset.metadata.images,
         assets: asset.metadata.assets,
       };
+
+      sendToast({ message: 'Please approve the upcoming transaction using your wallet...', type: 'is-warning' });
 
       // @ts-ignore
       const lspFactory = new LSPFactory(web3.currentProvider!, { chainId: CHAIN_ID });
@@ -64,9 +69,11 @@ function UpdateModal({ asset, onClose }: UpdateModalProps) {
         encodedData.values
       ).send({ from: address });
 
+      sendToast({ message: `Successfully updated asset.`, type: 'is-success' });
       onClose();
+      queryClient.invalidateQueries(['assets']);
     } catch (e) {
-      console.log(e);
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setSaving(false);
     }
