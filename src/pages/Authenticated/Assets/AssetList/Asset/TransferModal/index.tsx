@@ -4,9 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
 
-import { IAsset } from "../../../../../models";
-import { useAuthenticatedUser } from "../../../../../hooks";
-import { sendToast } from "../../../../../utils";
+import { IAsset } from "../../../../../../models";
+import { useAuthenticatedUser } from "../../../../../../hooks";
+import { sendToast } from "../../../../../../utils";
 
 interface TransferModalProps {
   asset: IAsset;

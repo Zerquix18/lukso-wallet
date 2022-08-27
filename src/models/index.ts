@@ -63,4 +63,5 @@ export interface IAsset {
 export interface IVault {
   id: string;
   owner: string;
+  assets: IAsset[];
 }

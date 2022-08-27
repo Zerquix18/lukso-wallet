@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Button, Card, Content, Heading, Media, Tag } from "react-bulma-components";
 
-import { useAuthenticatedUser } from "../../../../hooks";
-import { IAsset } from "../../../../models";
+import { useAuthenticatedUser } from "../../../../../hooks";
+import { IAsset } from "../../../../../models";
 
 import MintModal from "./MintModal";
 import OwnershipDropdown from "./OwnershipDropdown";

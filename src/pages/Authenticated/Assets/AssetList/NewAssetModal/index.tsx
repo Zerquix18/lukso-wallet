@@ -7,9 +7,9 @@ import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP12IssuedAssetsSchema from '@erc725/erc725.js/schemas/LSP12IssuedAssets.json';
 import LSP0ERC725Account from '@lukso/lsp-smart-contracts/artifacts/UniversalProfile.json';
 
-import { useAuthenticatedUser } from "../../../../hooks";
-import { CHAIN_ID, IPFS_GATEWAY_API_BASE_URL } from "../../../../constants";
-import { sendToast } from "../../../../utils";
+import { useAuthenticatedUser } from "../../../../../hooks";
+import { CHAIN_ID, IPFS_GATEWAY_API_BASE_URL } from "../../../../../constants";
+import { sendToast } from "../../../../../utils";
 
 interface NewAssetModalProps {
   onClose: () => void;

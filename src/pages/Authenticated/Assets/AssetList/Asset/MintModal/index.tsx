@@ -2,35 +2,37 @@ import { useState } from "react";
 import { Button, Form, Modal } from "react-bulma-components";
 import { useQueryClient } from "@tanstack/react-query";
 
-import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
+import LSP7Mintable from '@lukso/lsp-smart-contracts/artifacts/LSP7Mintable.json';
+
+import { IAsset } from "../../../../../../models";
 import { useAuthenticatedUser } from "../../../../../../hooks";
 import { sendToast } from "../../../../../../utils";
 
-interface TransferModalProps {
-  assetId: string;
+interface MintModalProps {
+  asset: IAsset;
   onClose: () => void;
 }
 
-function TransferModal({ assetId, onClose }: TransferModalProps) {
+function MintModal({ asset, onClose }: MintModalProps) {
   const { address, web3 } = useAuthenticatedUser();
   const queryClient = useQueryClient();
-  const [newOwner, setNewOwner] = useState('');
+  const [amount, setAmount] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const onSubmit = async () => {
     try {
       setSaving(true);
 
-      sendToast({ message: 'Please approve the upcoming transactions using your wallet...', type: 'is-warning' });
-      const LSP7DigitalAssetAbi = LSP7DigitalAsset.abi as any;
-      const myToken = new web3.eth.Contract(LSP7DigitalAssetAbi, assetId);
+      sendToast({ message: 'Please approve the upcoming transaction using your wallet...', type: 'is-warning' });
 
-      await myToken.methods.transferOwnership(newOwner).send({ from: address });
-      sendToast({ message: `Successfully updated asset.`, type: 'is-success' });
+      const weiAmount = web3.utils.toWei(String(amount));
+      const LSP7MintableAbi = LSP7Mintable.abi as any;
+      const myToken = new web3.eth.Contract(LSP7MintableAbi, asset.id);
+      await myToken.methods.mint(address, weiAmount, false, '0x').send({ from: address });
+      sendToast({ message: `Successfully minted ${amount} ${asset.symbol}`, type: 'is-success' });
       queryClient.invalidateQueries(['assets']);
       onClose();
     } catch (e) {
-      console.log(e);
       sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setSaving(false);
@@ -42,19 +44,20 @@ function TransferModal({ assetId, onClose }: TransferModalProps) {
       <Modal.Card>
         <Modal.Card.Header>
           <Modal.Card.Title>
-            Transfer Ownership
+            Mint
           </Modal.Card.Title>
         </Modal.Card.Header>
         <Modal.Card.Body>
           <form>
             <Form.Field>
-              <Form.Label>New owner</Form.Label>
+              <Form.Label>Amount</Form.Label>
               <Form.Control>
                 <Form.Input
-                  placeholder="0x..."
-                  value={newOwner}
+                  min={0}
+                  type="number"
+                  value={amount}
                   onChange={(e) => {
-                    setNewOwner(e.target.value);
+                    setAmount(parseInt(e.target.value));
                   }}
                 />
               </Form.Control>
@@ -66,7 +69,7 @@ function TransferModal({ assetId, onClose }: TransferModalProps) {
             Close
           </Button>
           <Button size="small" color="success" loading={saving} disabled={saving} onClick={onSubmit}>
-            Transfer
+            Mint
           </Button>
         </Modal.Card.Footer>
       </Modal.Card>
@@ -74,4 +77,4 @@ function TransferModal({ assetId, onClose }: TransferModalProps) {
   );
 }
 
-export default TransferModal;
+export default MintModal;

@@ -1,34 +1,40 @@
-import { useRef, useState } from "react";
-import { Button, Heading, Progress, Notification, Columns } from "react-bulma-components";
-import { useQuery } from "@tanstack/react-query";
+import { Heading, Progress } from "react-bulma-components";
+import { useQueries } from "@tanstack/react-query";
 
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP3UniversalProfileMetadata from '@erc725/erc725.js/schemas/LSP3UniversalProfileMetadata.json';
+import LSP10ReceivedVaults from '@erc725/erc725.js/schemas/LSP10ReceivedVaults.json';
+import LSP9Vault from '@lukso/lsp-smart-contracts/artifacts/LSP9Vault.json';
 import LSP4schema from '@erc725/erc725.js/schemas/LSP4DigitalAsset.json';
 import LSP7Mintable from '@lukso/lsp-smart-contracts/artifacts/LSP7Mintable.json';
 import { LSP4DigitalAsset } from "@lukso/lsp-factory.js/build/main/src/lib/interfaces/lsp4-digital-asset";
 
 import { DEFAULT_CONFIG, DEFAULT_PROVIDER } from "../../../constants";
 import { useAuthenticatedUser } from "../../../hooks";
-import { IAsset } from "../../../models";
+import { IAsset, IVault } from "../../../models";
 
-import NewAssetModal from "./NewAssetModal";
-import Asset from "./Asset";
+import AssetList from "./AssetList";
+
+const LSP7MintableAbi = LSP7Mintable.abi as any;
+const LSP9VaultAbi = LSP9Vault.abi as any;
 
 function Assets() {
   const { address, web3 } = useAuthenticatedUser();
 
-  const erc725Ref = useRef(new ERC725(LSP3UniversalProfileMetadata as ERC725JSONSchema[], address, DEFAULT_PROVIDER, DEFAULT_CONFIG));
-  const erc725 = erc725Ref.current;
-
   const fetchAssets = async () => {
+    const erc725 = new ERC725(
+      LSP3UniversalProfileMetadata as ERC725JSONSchema[],
+      address,
+      DEFAULT_PROVIDER,
+      DEFAULT_CONFIG
+    );
+
     const data = await erc725.fetchData(['LSP12IssuedAssets[]', 'LSP5ReceivedAssets[]']);
     const contractIds = Array.from(new Set(data.map(item => item.value as string).flat()));
 
     const promises = contractIds.map(async contractId => {
       const contractErc725 = new ERC725(LSP4schema as ERC725JSONSchema[], contractId, DEFAULT_PROVIDER, DEFAULT_CONFIG);
 
-      const LSP7MintableAbi = LSP7Mintable.abi as any;
       const myToken = new web3.eth.Contract(LSP7MintableAbi, contractId);
 
       const [
@@ -66,39 +72,39 @@ function Assets() {
     return assets;
   };
 
-  const { isLoading, data: assets } = useQuery(['assets'], fetchAssets);
-
-  if (isLoading || ! assets) {
-    return <Progress />;
-  }
-
-  if (assets.length === 0) {
-    return (
-      <Notification color="warning">
-        You own no assets. You can create one.
-      </Notification>
+  const fetchVaults = async () => {
+    const erc725 = new ERC725(
+      LSP10ReceivedVaults as ERC725JSONSchema[],
+      address,
+      DEFAULT_PROVIDER,
+      DEFAULT_CONFIG
     );
-  }
 
-  return (
-    <Columns>
-      { assets.map(asset => {
-        return (
-          <Columns.Column key={asset.id} size="one-third">
-            <Asset asset={asset} />
-          </Columns.Column>
-        );
-      })}
-    </Columns>
-  );
-}
+    const data = await erc725.fetchData('LSP10Vaults[]');
+    const vaultIds = data.value as string[];
 
-function AssetsWrapper() {
-  const [adding, setAdding] = useState(false);
+    const promises = vaultIds.map(async id => {
+      const myVault = new web3.eth.Contract(LSP9VaultAbi, id);
+      const owner = await myVault.methods.owner().call();
+      const assets: IAsset[] = [];
+      return { id, owner, assets };
+    });
 
-  const toggleAdding = () => {
-    setAdding(state => ! state);
+    const vaults: IVault[] = await Promise.all(promises);
+    return vaults;
   };
+
+  const [
+    { isLoading: isLoadingAssets, data: assets },
+    { isLoading: isLoadingVaults, data: vaults },
+  ] = useQueries({
+    queries: [
+      { queryKey: ['assets'], queryFn: fetchAssets },
+      { queryKey: ['vaults'], queryFn: fetchVaults },
+    ]
+  });
+
+  const isLoading = isLoadingAssets || isLoadingVaults;
 
   return (
     <div>
@@ -107,17 +113,13 @@ function AssetsWrapper() {
       </Heading>
       <Heading subtitle>Manage your tokens and NFTs.</Heading>
 
-      <div style={{ textAlign: 'right', marginBottom: 10 }}>
-        <Button color="primary" onClick={toggleAdding}>Add asset</Button>
-      </div>
-
-      { adding && (
-        <NewAssetModal onClose={toggleAdding} />
+      {(isLoading || ! (assets && vaults)) ? (
+        <Progress />
+      ) : (
+        <AssetList assets={assets} vaults={vaults} />
       )}
-
-      <Assets />
     </div>
   );
 }
 
-export default AssetsWrapper;
+export default Assets;

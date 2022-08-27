@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Button, Modal } from "react-bulma-components";
+import { useQueryClient } from "@tanstack/react-query";
 
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP9Vault from '@lukso/lsp-smart-contracts/artifacts/LSP9Vault.json';
 import LSP10ReceivedVaults from '@erc725/erc725.js/schemas/LSP10ReceivedVaults.json';
 import LSP0ERC725Account from '@lukso/lsp-smart-contracts/artifacts/UniversalProfile.json';
 
-import { useAuthenticatedUser } from "../../../../hooks";
-import { IPFS_GATEWAY_API_BASE_URL } from "../../../../constants";
+import { useAuthenticatedUser } from "../../../../../hooks";
+import { IPFS_GATEWAY_API_BASE_URL } from "../../../../../constants";
+import { sendToast } from "../../../../../utils";
 
 interface NewVaultModalProps {
   onClose: () => void;
@@ -15,11 +17,14 @@ interface NewVaultModalProps {
 
 function NewVaultModal({ onClose }: NewVaultModalProps) {
   const { address, web3 } = useAuthenticatedUser();
+  const queryClient = useQueryClient();
+
   const [creating, setCreating] = useState(false);
 
   const onCreate = async () => {
     try {
       setCreating(true);
+      sendToast({ message: 'Please approve the upcoming transactions using your wallet...', type: 'is-warning' });
 
       const LSP9VaultAbi = LSP9Vault.abi as any;
       const vaultContract = new web3.eth.Contract(LSP9VaultAbi);
@@ -28,6 +33,8 @@ function NewVaultModal({ onClose }: NewVaultModalProps) {
         arguments: [address],
       }).send({ from: address });
 
+      sendToast({ message: 'Vault successfully deployed! Now let\'s update your profile', type: 'is-success' });
+
       const newContractAddress = newContract.options.address;
 
       ///////// ---
@@ -35,6 +42,7 @@ function NewVaultModal({ onClose }: NewVaultModalProps) {
       const options = {
         ipfsGateway: IPFS_GATEWAY_API_BASE_URL,
       };
+
       const erc725LSP12IssuedAssets = new ERC725(
         LSP10ReceivedVaults as ERC725JSONSchema[],
         address,
@@ -44,7 +52,7 @@ function NewVaultModal({ onClose }: NewVaultModalProps) {
 
       const LSP9Vaults = await erc725LSP12IssuedAssets.getData('LSP10Vaults[]');
       (LSP9Vaults.value as string[]).push(newContractAddress);
-      
+
       const LSP9VaultsLength = (LSP9Vaults.value as string[]).length;
       const LSP9InterfaceId = '0x8c1d44f6'; // https://docs.lukso.tech/standards/smart-contracts/interface-ids/
 
@@ -60,20 +68,18 @@ function NewVaultModal({ onClose }: NewVaultModalProps) {
         },
       ]);
 
-      console.log(encodedErc725Data);
-
       const LSP0ERC725AccountAbi = LSP0ERC725Account.abi as any;
       const profileContract = new web3.eth.Contract(LSP0ERC725AccountAbi, address);
-      const receipt = await profileContract.methods['setData(bytes32[],bytes[])'](
+      await profileContract.methods['setData(bytes32[],bytes[])'](
         encodedErc725Data.keys,
         encodedErc725Data.values
       ).send({ from: address });
 
-      console.log(receipt);
-
-      // window.location.reload();
+      sendToast({ message: 'Vault successfully created.', type: 'is-success' });
+      queryClient.invalidateQueries(['vaults']);
+      onClose();
     } catch (e) {
-      console.log(e);
+      sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {
       setCreating(false);
     }

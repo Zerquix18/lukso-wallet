@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Button, Columns, Heading, Progress } from "react-bulma-components";
+import { useQuery } from "@tanstack/react-query";
 
 import LSP10ReceivedVaults from '@erc725/erc725.js/schemas/LSP10ReceivedVaults.json';
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
@@ -8,9 +9,9 @@ import LSP9Vault from '@lukso/lsp-smart-contracts/artifacts/LSP9Vault.json';
 import { DEFAULT_CONFIG, DEFAULT_PROVIDER } from "../../../constants";
 import { useAuthenticatedUser } from "../../../hooks";
 
-import NewVaultModal from "./NewVaultModal";
-import { useQuery } from "@tanstack/react-query";
+import NewVaultModal from "../Assets/AssetList/NewVaultModal";
 import Vault from "./Vault";
+import { IAsset } from "../../../models";
 
 const LSP9VaultAbi = LSP9Vault.abi as any;
 
@@ -27,7 +28,8 @@ function Vaults() {
     const promises = vaultIds.map(async id => {
       const myVault = new web3.eth.Contract(LSP9VaultAbi, id);
       const owner = await myVault.methods.owner().call();
-      return { id, owner };
+      const assets: IAsset[] = [];
+      return { id, owner, assets };
     });
 
     const vaults = await Promise.all(promises);

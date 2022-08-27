@@ -4,10 +4,10 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import LSP7Mintable from '@lukso/lsp-smart-contracts/artifacts/LSP7Mintable.json';
 
-import { useAuthenticatedUser } from "../../../../../hooks";
+import { useAuthenticatedUser } from "../../../../../../hooks";
 
 import TransferModal from "./TransferModal";
-import { sendToast } from "../../../../../utils";
+import { sendToast } from "../../../../../../utils";
 
 interface OwnershipDropdownProps {
   assetId: string;

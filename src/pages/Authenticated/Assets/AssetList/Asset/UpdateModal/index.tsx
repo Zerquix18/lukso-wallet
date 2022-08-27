@@ -7,10 +7,10 @@ import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAs
 import ERC725, { ERC725JSONSchema } from "@erc725/erc725.js";
 import LSP4DigitalAsset from '@erc725/erc725.js/schemas/LSP4DigitalAsset.json';
 
-import { IAsset } from "../../../../../models";
-import { CHAIN_ID, IPFS_GATEWAY_API_BASE_URL } from "../../../../../constants";
-import { useAuthenticatedUser } from "../../../../../hooks";
-import { sendToast } from "../../../../../utils";
+import { IAsset } from "../../../../../../models";
+import { CHAIN_ID, IPFS_GATEWAY_API_BASE_URL } from "../../../../../../constants";
+import { useAuthenticatedUser } from "../../../../../../hooks";
+import { sendToast } from "../../../../../../utils";
 
 interface UpdateModalProps {
   asset: IAsset;
