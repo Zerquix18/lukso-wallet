@@ -17,7 +17,9 @@ function Profile() {
   const { address } = useAuthenticatedUser();
   const [editing, setEditing] = useState(false);
 
-  const erc725Ref = useRef(new ERC725(LSP3UniversalProfileMetadata as ERC725JSONSchema[], address, DEFAULT_PROVIDER, DEFAULT_CONFIG));
+  const erc725Ref = useRef(
+    new ERC725(LSP3UniversalProfileMetadata as ERC725JSONSchema[], address, DEFAULT_PROVIDER, DEFAULT_CONFIG)
+  );
   const erc725 = erc725Ref.current;
 
   const toggleEditing = () => {
@@ -30,14 +32,10 @@ function Profile() {
     return value.LSP3Profile;
   };
 
-  const { isLoading, data: profile, refetch } = useQuery(['profile'], fetchProfileData);
+  const { isLoading, data: profile } = useQuery(['profile'], fetchProfileData);
 
-  if (isLoading) {
+  if (isLoading || ! profile) {
     return <Progress />;
-  }
-
-  if (! profile) {
-    return <p>There was a problem fetching the profile data.</p>;
   }
 
   let backgroundImage = DEFAULT_BACKGROUND_IMAGE;
@@ -104,10 +102,6 @@ function Profile() {
         <ProfileModal
           profile={profile}
           onClose={toggleEditing}
-          onSuccess={() => {
-            refetch();
-            toggleEditing();
-          }}
         />
       )}
     </Card>
