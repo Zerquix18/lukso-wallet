@@ -1,28 +1,21 @@
 import { Container, Dropdown, Heading, Icon, Navbar } from "react-bulma-components";
-import { toast } from 'bulma-toast';
+
+import { EXPLORER_URL } from "../../../constants";
 import { useAuthenticatedUser, useAuthentication } from "../../../hooks";
-import { useNavigate } from "react-router-dom";
+import { sendToast } from "../../../utils";
 
 function LayoutNavbar() {
   const { logout } = useAuthentication();
   const { address } = useAuthenticatedUser();
-  const navigate = useNavigate();
 
-  const onDropdownSelect = (value: string) => {
+  const onDropdownSelect = async (value: string) => {
     switch (value) {
-      case 'my_profile':
-        navigate('/profile');
-        break;
       case 'copy_address':
-        navigator.clipboard.writeText(address).then(() => {
-          toast({
-            message: 'Successfully added to the clipboard.',
-            type: 'is-success',
-            dismissible: true,
-            pauseOnHover: true,
-            position: 'bottom-right',
-          });
-        });
+        await navigator.clipboard.writeText(address);
+        sendToast({ message: 'Successfully added to the clipboard.', type: 'is-success' });
+        break;
+      case 'open_in_explorer':
+        window.open(EXPLORER_URL + '/address/' + address);
         break;
       case 'logout':
         if (! window.confirm('Are you sure you want to log out?')) {
@@ -49,7 +42,7 @@ function LayoutNavbar() {
             onChange={onDropdownSelect}
           >
             <Dropdown.Item renderAs="a" value="copy_address">Copy Address</Dropdown.Item>
-            <Dropdown.Item renderAs="a" value="my_profile">My Profile</Dropdown.Item>
+            <Dropdown.Item renderAs="a" value="open_in_explorer">Open address in explorer</Dropdown.Item>
             <Dropdown.Item renderAs="a" value="logout">Logout</Dropdown.Item>
           </Dropdown>
         </Navbar.Container>
