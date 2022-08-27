@@ -10,7 +10,6 @@ function Sidebar() {
     { path: '/assets', name: 'Assets' },
     { path: '/send', name: 'Send LYX' },
     { path: '/controllers', name: 'Controllers' },
-    { path: '/vaults', name: 'Vaults' },
     { path: '/sign', name: 'Sign & Recover' },
     { path: '/profile', name: 'My Profile' },
   ];
