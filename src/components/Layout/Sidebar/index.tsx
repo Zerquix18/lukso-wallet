@@ -8,10 +8,10 @@ function Sidebar() {
 
   const items = [
     { path: '/assets', name: 'Assets' },
-    { path: '/send', name: 'Send LYX' },
     { path: '/controllers', name: 'Controllers' },
-    { path: '/sign', name: 'Sign & Recover' },
     { path: '/profile', name: 'My Profile' },
+    { path: '/send', name: 'Send LYX' },
+    { path: '/sign', name: 'Sign & Recover' },
   ];
 
   return (
