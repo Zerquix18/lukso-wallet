@@ -58,6 +58,7 @@ export interface IAsset {
   decimals: number;
   balance: number;
   totalSupply: number;
+  vaultId?: string;
 }
 
 export interface IVault {

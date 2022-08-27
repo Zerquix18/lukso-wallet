@@ -3,6 +3,7 @@ import { Button, Form, Modal } from "react-bulma-components";
 import { useQueryClient } from "@tanstack/react-query";
 
 import LSP7DigitalAsset from '@lukso/lsp-smart-contracts/artifacts/LSP7DigitalAsset.json';
+import LSP9Vault from '@lukso/lsp-smart-contracts/artifacts/LSP9Vault.json';
 
 import { IAsset } from "../../../../../../models";
 import { useAuthenticatedUser } from "../../../../../../hooks";
@@ -12,6 +13,9 @@ interface TransferModalProps {
   asset: IAsset;
   onClose: () => void;
 }
+
+const LSP7DigitalAssetAbi = LSP7DigitalAsset.abi as any;
+const LSP9VaultAbi = LSP9Vault.abi as any;
 
 function TransferModal({ asset, onClose }: TransferModalProps) {
   const { address, web3 } = useAuthenticatedUser();
@@ -32,12 +36,17 @@ function TransferModal({ asset, onClose }: TransferModalProps) {
       sendToast({ message: 'Please approve the upcoming transaction using your wallet...', type: 'is-warning' });
 
       const weiAmount = web3.utils.toWei(String(amount));
-      const LSP7DigitalAssetAbi = LSP7DigitalAsset.abi as any;
       const myToken = new web3.eth.Contract(LSP7DigitalAssetAbi, asset.id);
-      await myToken.methods.transfer(address, recipient, weiAmount, false, '0x').send({ from: address });
+      if (asset.vaultId) {
+        const vaultContract = new web3.eth.Contract(LSP9VaultAbi, asset.vaultId);
+        const payload = await myToken.methods.transfer(asset.vaultId, recipient, weiAmount, false, '0x').encodeABI();
+        vaultContract.methods.execute(0, asset.id, 0, payload).send({ from: address });
+      } else {
+        await myToken.methods.transfer(address, recipient, weiAmount, false, '0x').send({ from: address });
+      }
       sendToast({ message: `Successfully transferred.`, type: 'is-success' });
       onClose();
-      queryClient.invalidateQueries(['assets']);
+      queryClient.invalidateQueries(['assets', 'vaults']);
     } catch (e) {
       sendToast({ message: (e as Error).message, type: 'is-danger' });
     } finally {

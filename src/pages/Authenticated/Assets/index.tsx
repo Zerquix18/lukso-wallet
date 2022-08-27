@@ -128,7 +128,7 @@ function Assets() {
         const totalSupply = parseFloat(web3.utils.fromWei(weiTotalSupply));
         const decimals = parseFloat(strDecimals);
   
-        const asset: IAsset = { id, name, symbol, metadata, creators, balance, owner, totalSupply, decimals };
+        const asset: IAsset = { id, name, symbol, metadata, creators, balance, owner, totalSupply, decimals, vaultId };
   
         return asset;
       });
