@@ -83,11 +83,59 @@ function Assets() {
     const data = await erc725.fetchData('LSP10Vaults[]');
     const vaultIds = data.value as string[];
 
-    const promises = vaultIds.map(async id => {
-      const myVault = new web3.eth.Contract(LSP9VaultAbi, id);
+    const promises = vaultIds.map(async vaultId => {
+      const myVault = new web3.eth.Contract(LSP9VaultAbi, vaultId);
       const owner = await myVault.methods.owner().call();
-      const assets: IAsset[] = [];
-      return { id, owner, assets };
+
+      const erc725 = new ERC725(
+        LSP3UniversalProfileMetadata as ERC725JSONSchema[],
+        vaultId,
+        DEFAULT_PROVIDER,
+        DEFAULT_CONFIG
+      );
+  
+      const data = await erc725.fetchData(['LSP12IssuedAssets[]', 'LSP5ReceivedAssets[]']);
+      const contractIds = Array.from(new Set(data.map(item => item.value as string).flat()));
+      
+      const promises = contractIds.map(async contractId => {
+        const contractErc725 = new ERC725(LSP4schema as ERC725JSONSchema[], contractId, DEFAULT_PROVIDER, DEFAULT_CONFIG);
+  
+        const myToken = new web3.eth.Contract(LSP7MintableAbi, contractId);
+  
+        const [
+          [LSP4TokenName, LSP4TokenSymbol, LSP4Metadata, LSP4Creators],
+          weiBalance,
+          owner,
+          weiTotalSupply,
+          strDecimals,
+        ] = await Promise.all(
+          [
+            contractErc725.fetchData(['LSP4TokenName', 'LSP4TokenSymbol', 'LSP4Metadata', 'LSP4Creators[]']),
+            myToken.methods.balanceOf(vaultId).call(),
+            myToken.methods.owner().call(),
+            myToken.methods.totalSupply().call(),
+            myToken.methods.decimals().call(),
+          ]
+        );
+  
+        const id = contractId;
+        const name = LSP4TokenName.value as string;
+        const symbol = LSP4TokenSymbol.value as string;
+        const metadata = (LSP4Metadata.value as any).LSP4Metadata as LSP4DigitalAsset;
+        const creators = LSP4Creators.value as string[];
+  
+        const balance = parseFloat(web3.utils.fromWei(weiBalance));
+        const totalSupply = parseFloat(web3.utils.fromWei(weiTotalSupply));
+        const decimals = parseFloat(strDecimals);
+  
+        const asset: IAsset = { id, name, symbol, metadata, creators, balance, owner, totalSupply, decimals };
+  
+        return asset;
+      });
+
+      const assets = await Promise.all(promises);
+
+      return { id: vaultId, owner, assets };
     });
 
     const vaults: IVault[] = await Promise.all(promises);

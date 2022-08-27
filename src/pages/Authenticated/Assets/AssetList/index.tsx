@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Columns, Tabs, Notification } from "react-bulma-components";
 
 import { IAsset, IVault } from "../../../../models";
+import { sendToast } from "../../../../utils";
 
 import Asset from "./Asset";
 import NewAssetModal from "./NewAssetModal";
@@ -22,6 +23,13 @@ function AssetList({ assets, vaults }: AssetListProps) {
   };
   const toggleAddingVault = () => {
     setAddingVault(state => ! state);
+  };
+  const copyWalletAddress = async () => {
+    if (! currentVault) {
+      return;
+    }
+    await navigator.clipboard.writeText(currentVault.id);
+    sendToast({ message: 'Successfully copied to the clipboard.', type: 'is-success' });
   };
 
   const assetsToDisplay = currentVault ? currentVault.assets : assets;
@@ -56,9 +64,12 @@ function AssetList({ assets, vaults }: AssetListProps) {
         })}
       </Tabs>
 
-      <div style={{ textAlign: 'right', marginBottom: 10 }}>
-        <Button color="primary" onClick={toggleAddingAsset}>Add asset</Button>
-      </div>
+      <Button.Group align="right">
+        <Button color="primary" onClick={toggleAddingAsset}>Add asset { currentVault ? 'to this vault' : null }</Button>
+        { currentVault && (
+          <Button color="secundary" onClick={copyWalletAddress}>Copy vault address</Button>
+        )}
+      </Button.Group>
 
       { assetsToDisplay.length === 0 && (
         <Notification color="warning">
