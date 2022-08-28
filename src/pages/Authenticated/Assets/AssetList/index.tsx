@@ -65,9 +65,10 @@ function AssetList({ assets, vaults }: AssetListProps) {
       </Tabs>
 
       <Button.Group align="right">
-        <Button color="primary" onClick={toggleAddingAsset}>Add asset { currentVault ? 'to this vault' : null }</Button>
-        { currentVault && (
+        { currentVault ? (
           <Button color="secundary" onClick={copyWalletAddress}>Copy vault address</Button>
+        ) : (
+          <Button color="primary" onClick={toggleAddingAsset}>Add asset</Button>
         )}
       </Button.Group>
 
