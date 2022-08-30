@@ -14,8 +14,9 @@ function Authenticated() {
         <Route path="/controllers" element={<Controllers />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/send" element={<Send />} />
-        <Route path="/assets" element={<Assets />} />
         <Route path="/sign" element={<Sign />} />
+        <Route path="/assets" element={<Assets />} />
+        <Route path="/" element={<Assets />} />
       </Routes>
     </Layout>
   );
